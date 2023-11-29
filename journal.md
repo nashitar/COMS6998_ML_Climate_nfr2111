@@ -51,3 +51,41 @@ c.Limit = 10
 # Run the Twint search
 twint.run.Search(c)
 ```
+
+## Trial 2: Using Stweet
+
+Documentation:
+- https://www.reddit.com/r/Python/comments/vb8cmu/twint_python_twitter_crawler_no_longer_being/
+- https://www.reddit.com/r/OSINT/comments/wx1qba/tools_for_twitter_like_twint_that_actually_are/
+
+Stweet is an advanced Python library used for scraping tweets and user information from Twitter's unofficial API. It provides a modern, fast, and user-friendly approach to collect tweets using various search parameters. Stweet was developed to offer a simpler and more reliable alternative to other scraping tools like Twint, addressing issues like complexity and error frequency. It allows users to conduct detailed searches for tweets, export data in various formats, and is designed with an emphasis on simplicity and flexibility in its codebase. The motivation behind the creation of Stweet was the challenges faced with Twint, another tweet scraping tool, which had many errors and a complex codebase. The creator aimed to provide a simpler, more reliable alternative​​​​. Stweet stood out with its user-friendly design and simplicity, making it easier to understand and modify. This was a notable improvement from Twint, which I had previously found to be error-prone and complex. The ability to contribute to Stweet and its flexibility in data export options, such as JSON lines and CSV, made my data scraping tasks more efficient and adaptable to different project requirements.
+
+However, my journey with Stweet was not without challenges. I encountered an issue with the `JsonLineFileRawOutput` attribute, which threw an `AttributeError`, which I realized was a compatibility issue with my Python version (https://github.com/markowanga/stweet/issues/96). Stweet version 2.0 required Python versions above 3.8, and once I upgraded my Python environment, this issue was resolved. Despite these resolved issues, I faced a significant obstacle that seemed beyond resolution. The `ScrapBatchBadResponse` error, with a status code of 404, indicated that Stweet was unable to fetch data from Twitter. This issue persisted and appeared to be linked to changes in Twitter's API or efforts to restrict scraping activities. This irresolvable problem posed a major limitation to Stweet's functionality, highlighting the inherent challenges in relying on unofficial APIs and the dynamic nature of web scraping tools (https://github.com/markowanga/stweet/issues/112). The one thing I thought to try to resolve this error was reverting back to an older version of Stweet that didn’t seem to experience it. Unfortunately, I ran into the same error message I received with Twint, "RefreshTokenException: Could not find the Guest token in HTML," which indicated that there was an issue related to obtaining a Guest token, and this error persisted without a clear solution. This time, I found no documentation to reference on the issue and resolved that recent changes to Twitters API (https://www.engadget.com/twitter-shut-off-its-free-api-and-its-breaking-a-lot-of-apps-222011637.html) were the root cause of the issues and were realistically unresolvable. I spent time playing around with alternatives like Scweet (https://github.com/Altimis/Scweet) but found that they were either too buggy or the owners were too unresponsive for them to be reliable resources.
+
+```
+pip install -U stweet
+```
+
+```
+import stweet as st
+search_tweets_task = st.SearchTweetsTask(
+    all_words='#HurricaneSandy'
+)
+tweets_collector = st.CollectorTweetOutput()
+st.TweetSearchRunner(
+    search_tweets_task=search_tweets_task,
+    tweet_outputs=[tweets_collector, st.CsvTweetOutput('output_file.csv')]
+).run()
+tweets = tweets_collector.get_scrapped_tweets()
+```
+
+```
+import stweet as st
+search_tweets_task = st.SearchTweetsTask(all_words='#HurricaneSandy')
+    output_jl_tweets = st.JsonLineFileRawOutput('output_raw_search_tweets.jl')
+    output_jl_users = st.JsonLineFileRawOutput('output_raw_search_users.jl')
+    output_print = st.PrintRawOutput()
+    st.TweetSearchRunner(search_tweets_task=search_tweets_task,
+                         tweet_raw_data_outputs=[output_print, output_jl_tweets],
+                         user_raw_data_outputs=[output_print, output_jl_users]).run()
+```
