@@ -37,35 +37,35 @@ def replace_words(x, transformed_file, features) -> list:
     # Split the text and replace words with TF-IDF scores
     return list(map(lambda y: dictionary[f'{y}'], x['text'].split()))
 
-def sentiment_rate(df) -> pd.DataFrame:
+def sentiment(df) -> pd.DataFrame:
 
     '''
-    Calculates sentiment rates for each row in the DataFrame.
+    Calculates sentiments for each row in the DataFrame.
 
     Returns:
-        df (pandas.DataFrame): DataFrame with added 'sentiment_rate' and 'normalized_sentiment_rate' columns.
+        df (pandas.DataFrame): DataFrame with added 'sentiment' and 'normalized_sentiment' columns.
     '''
 
-    # Calculate the sentiment rate by performing a dot product of sentiment coefficients and TF-IDF scores
-    df['sentiment_rate'] = df.apply(lambda x: np.array(x.loc['sentiment_coeff']) @ np.array(x.loc['tfidf_scores']), axis=1)
+    # Calculate the sentiment by performing a dot product of sentiment coefficients and TF-IDF scores
+    df['sentiment'] = df.apply(lambda x: np.array(x.loc['sentiment_coeff']) @ np.array(x.loc['tfidf_scores']), axis=1)
 
     # Define the min and max values of your desired five-point scale
     min_scale_value = 1  # Minimum value on the scale
     max_scale_value = 5  # Maximum value on the scale
 
     # Min-Max scaling
-    min_value = df['sentiment_rate'].min()
-    max_value = df['sentiment_rate'].max()
+    min_value = df['sentiment'].min()
+    max_value = df['sentiment'].max()
 
-    # Apply Min-Max scaling formula to normalize sentiment rates
-    df['normalized_sentiment_rate'] = min_scale_value + ((df['sentiment_rate'] - min_value) / (max_value - min_value)) * (max_scale_value - min_scale_value)
+    # Apply Min-Max scaling formula to normalize sentiments
+    df['normalized_sentiment'] = min_scale_value + ((df['sentiment'] - min_value) / (max_value - min_value)) * (max_scale_value - min_scale_value)
 
     return df
 
 def cluster_prediction(df) -> pd.DataFrame:
     
     '''
-    Maps cluster predictions to sentiment categories based on normalized sentiment rates.
+    Maps cluster predictions to sentiment categories based on normalized sentiments.
 
     Returns:
         df (pd.DataFrame): DataFrame with added 'pred' column containing sentiment category predictions.
@@ -76,8 +76,8 @@ def cluster_prediction(df) -> pd.DataFrame:
 
     for index, row in df.iterrows():
 
-        rate = math.floor(row['normalized_sentiment_rate'])
-        rate_map = {
+        sentiment = math.floor(row['normalized_sentiment'])
+        sentiment_map = {
             1: 'Very Negative',
             2: 'Negative',
             3: 'Neutral',
@@ -85,8 +85,8 @@ def cluster_prediction(df) -> pd.DataFrame:
             5: 'Very Positive'
         }
 
-        # Assign the predicted sentiment category based on the normalized sentiment rate
-        df.at[index, 'pred'] = rate_map[rate]
+        # Assign the predicted sentiment category based on the normalized sentiment
+        df.at[index, 'pred'] = sentiment_map[sentiment]
 
     return df
 
@@ -99,6 +99,7 @@ def sentiment_analysis(prefix) -> pd.DataFrame:
         pd (pd.DataFrame): DataFrame with sentiment analysis results.
     '''
 
+    # The sentiment analysis takes in a preprocessed dataframe
     # Read cleaned text data and sentiment map
     text = pd.read_csv(f'./etc/cleaned_{prefix}.csv')
     sentiment_map = pd.read_csv(f'./etc/sentiment_dictionary_{prefix}.csv')
@@ -120,9 +121,9 @@ def sentiment_analysis(prefix) -> pd.DataFrame:
     df = pd.DataFrame(data=[replaced_closeness_scores, replaced_tfidf_scores, text['text']]).T
     df.columns = ['sentiment_coeff', 'tfidf_scores', 'text']
 
-    # Calculate sentiment rate and normalize it
-    df = sentiment_rate(df)
+    # Calculate sentiment and normalize it
+    df = sentiment(df)
     
-    # Map sentiment rates to sentiment categories
+    # Map sentiments to sentiment categories
     df = cluster_prediction(df)
     return df
