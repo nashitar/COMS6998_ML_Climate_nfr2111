@@ -35,13 +35,13 @@ def kmeans(prefix) -> None:
     # Step 3: Assign sentiment scores based on cluster assignments
     for i in words['cluster']:
         if i == 0: # neutral
-            words['cluster_value'] = 3
-        elif i == 1: # positive
-            words['cluster_value'] = 4
-        elif i == 2: # very negative
-            words['cluster_value'] = 1
-        elif i == 3: # negative
             words['cluster_value'] = 2
+        elif i == 1: # positive
+            words['cluster_value'] = 1
+        elif i == 2: # very negative
+            words['cluster_value'] = 4
+        elif i == 3: # negative
+            words['cluster_value'] = 3
         else: # very positive
             words['cluster_value'] = 5
 
