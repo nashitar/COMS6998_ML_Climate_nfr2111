@@ -92,8 +92,80 @@ search_tweets_task = st.SearchTweetsTask(all_words='#HurricaneSandy')
                          user_raw_data_outputs=[output_print, output_jl_users]).run()
 ```
 
-## Trial 3: Nitter
+## Trial 3: Analyzing News
+
+My next thought was to instead look at news articles, rather than tweets. I used a variety of python packages in attempting to collect headlines from various outlets.
+
+### The GitHub page for [kotartemiy/newscatcher](https://github.com/kotartemiy/newscatcher) describes a Python package that allows users to programmatically collect normalized news from various websites. Key features and functionalities include:
+
+- Filtering news by topic, country, or language.
+- Simple installation with `pip install newscatcher --upgrade`.
+- Functions like `Newscatcher`, `describe_url`, and `urls` to get news, describe websites, and list supported news websites.
+- The package is built around a SQLite database with RSS feed endpoints.
+- It is not recommended for production systems but suitable for testing assumptions and building MVPs.
+- Licensed under MIT License.
+
+The PyPI page for [newscatcher](https://pypi.org/project/newscatcher/) provides the following information:
+
+- **Version**: 0.2.0, released on May 20, 2020.
+- **Description**: A Python package for programmatically collecting normalized news from various websites.
+- **Installation**: Can be installed using `pip install newscatcher --upgrade`.
+- **Usage**: Offers functions to get the latest news, filter by topic, country, or language, and get lists of supported news websites.
+- **Functionality**: Includes `Newscatcher`, `describe_url`, and `urls` functions.
+- **Requirements**: Needs Python version 3.6 to <4.0.
+- **License**: Licensed under MIT License.
+- **Tags**: Associated with News, RSS, Scraping, Data Mining.
+
+The GitHub Gist at [newscatcher_website_headlines.py](https://gist.github.com/Aditya1001001/2a21a304a7acc5fa301291a2eb211ba1#file-newscatcher_website_headlines-py) appears to be a Python script that demonstrates how to use the `Newscatcher` package. It includes code for importing the `Newscatcher` and `describe_url` functions from the `newscatcher` package, retrieving news headlines from a specified website (e.g., 'mediamatters.org'), and printing them.
+
+### The GitHub page for [kotartemiy/pygooglenews](https://github.com/kotartemiy/pygooglenews) describes a Python library that acts as a wrapper for the Google News RSS feed. Key points include:
+
+- **About**: It's a collection of functionalities to interact with Google News, including accessing top stories, topic-related news feeds, geolocation news feeds, and extensive full-text search feeds.
+- **Differences from Other Libraries**: Offers URL-escaping for user input in search functions and supports complex search queries.
+- **Use Cases**: Integrating news feeds into applications, collecting topic-specific data for machine learning models, media monitoring, etc.
+- **Setup**: Instructions for installation and usage, including how to use with ScrapingBee and proxies for production environments.
+- **Examples**: Demonstrations of advanced search queries and handling of search results.
+- **Built With**: Utilizes Feedparser and BeautifulSoup4.
+
+The GitHub issue [#34 on kotartemiy/pygooglenews](https://github.com/kotartemiy/pygooglenews/issues/34) titled "Could not parse your date" includes the following points:
+
+- **Issue Description**: A user encountered an exception "Could not parse your date" when trying to use the `search` function with date parameters in the 'YYYY-MM-DD' format.
+- **Discussion**: Another user suggested it might be a problem with the `parsedata` module and regex. They proposed a workaround by modifying the script to bypass data parsing.
+- **Continued Problem**: A third user reported that this workaround did not resolve the issue, as using a string in the 'YYYY-MM-DD' format still resulted in a parsing error.
+
+The GitHub repository [kurtmckee/feedparser](https://github.com/kurtmckee/feedparser) is focused on parsing Atom and RSS feeds in Python. Key details include:
+
+- **Purpose**: Designed for parsing Atom and RSS feeds.
+- **Installation**: Can be installed using `pip install feedparser`.
+- **Documentation**: Available online and included in the source format, ReST, in the `docs/` directory.
+- **Testing**: Features an extensive test suite powered by Tox.
+- **License**: The project is open-source, but the specific license wasn't detailed on the main page.
+
+The [feedparser documentation](https://feedparser.readthedocs.io/en/latest/) on Read the Docs provides detailed information about `feedparser` version 6.0.11. It includes sections on basic and advanced features, HTTP features, annotated examples, a changelog, and a comprehensive reference guide. The documentation is designed to describe the behavior of this specific version of `feedparser` and is provided "as is" by the author without warranties. It also includes a link to edit the documentation on GitHub.
+
+The GitHub issue [#418 on facebook/prophet](https://github.com/facebook/prophet/issues/418) titled "Command 'python setup.py egg_info' failed with error code 1 in /tmp/pip-build-BqMhb7/matplotlib/" includes the following points:
+
+- **Problem**: Users reported errors while installing packages like `neuralpy` and `matplotlib` in Python, with specific error messages related to `python setup.py egg_info`.
+- **Discussion**: Various users proposed solutions such as upgrading `setuptools`, installing specific Python or system libraries, and adjusting permissions.
+- **Outcome**: The issue was closed by a contributor who noted that it was not related to the `prophet` package itself.
+
+The GitHub issue [#33 on kotartemiy/pygooglenews](https://github.com/kotartemiy/pygooglenews/issues/33) titled "I Can't Install it!!!" includes these key points:
+
+- A user experienced an installation error with `pygooglenews` related to `python setup.py egg_info`.
+- Suggestions for resolving the issue included downgrading `setuptools` to a specific version and trying alternative packages like `gnews`.
+- Some users found success with these solutions, while others continued to face difficulties.
+
+The GitHub issue [#40 on kotartemiy/pygooglenews](https://github.com/kotartemiy/pygooglenews/issues/40) titled "error in feedparser setup command: use_2to3 is invalid" includes these key points:
+
+- A user reported an installation error for `pygooglenews` due to a problem with the `feedparser` setup command.
+- Other users experienced similar issues on various operating systems.
+- A suggested solution was to downgrade `setuptools` to a version below 58.0.0, which resolved the issue for some users.
+
+Unfortunately, due to the variety of package issues, I resolved to look back into scraping Twitter.
+
+## Trial 4: Nitter
 
 The root problem needing to be addressed is the significant changes to the Twitter API that took place earlier this year that ultimately affected developers, researchers, and end users. These changes involved a new pricing structure and discontinuation of old access levels. Twitter introduced a new API pricing structure with three tiers: a basic free level, a $100 per month basic level, and a costly enterprise level. The free level is quite limited, primarily suitable for content posting bots. The basic level offers more requests per app per month, targeted at hobbyists or students, while the enterprise level, costing $42,000 a month, provides extensive data access (https://techcrunch.com/2023/03/29/twitter-announces-new-api-with-only-free-basic-and-enterprise-levels/). Previous access levels, including Standard (for v1.1), Essential and Elevated (for v2), and Premium, were phased out over a 30-day period. This shift necessitated developers and users of these levels to transition to the new pricing tiers (https://techcrunch.com/2023/03/29/twitter-announces-new-api-with-only-free-basic-and-enterprise-levels/). This change created cascading changes for developers and app makers, raised concerns for research communities, and significantly impacted third-party services and bots. The introduction of v2 in 2020 offered multiple access levels to developers, allowing access to a significant number of tweets per month. The new changes mean that developers requiring similar levels of access now need to subscribe to the expensive enterprise plan (https://techcrunch.com/2023/03/29/twitter-announces-new-api-with-only-free-basic-and-enterprise-levels/). Alongside this, the discontinuation of free API access raised concerns among researchers and academics. Many feared that the changes would hinder student projects and reduce the transparency of the platform. Twitter mentioned exploring new ways to serve the academic community but didn't provide concrete solutions. The available tiers might not be suitable for academic needs due to their limitations or high cost (https://techcrunch.com/2023/03/29/twitter-announces-new-api-with-only-free-basic-and-enterprise-levels/). Many services that used Twitter's API for login or other functionalities faced disruptions. The future of various Twitter bots, which provided diverse services like weather updates and emergency alerts, became uncertain. Some bot developers opted not to pay for API access, leading to the potential shutdown of these accounts (https://www.engadget.com/twitter-shutting-off-free-api-prepare-174340770.html). That is the reason why my initial project trials weren’t successful. Overall, the 2023 modifications to Twitter's API represent a significant shift in the platform's approach to data access and developer relations, with implications for various stakeholders, including developers, researchers, and the broader Twitter user base. These changes, coupled with the shutdown of several developer-related projects and the blocking of alternative Twitter apps, have strained Twitter's relationship with the developer community.
 
 Nitter (https://github.com/zedeus/nitter) is an open-source web application that provides an alternative way to access and interact with Twitter content while prioritizing user privacy and reducing tracking. It is essentially a proxy service for Twitter that retrieves tweets and other Twitter data without requiring users to access the official Twitter website or use their mobile app. Nitter is designed to offer a more privacy-focused and streamlined Twitter experience, making it an attractive choice for individuals who are concerned about their online privacy. Obviously, my goal with using Nitter was not privacy related, but rather as a work around to Twitter’s new API access system. Nitter acts as a proxy server between users and Twitter's servers. When a user requests Twitter content through Nitter, the application fetches the data from Twitter on the user's behalf. Because of this, Nitter can be used for data scraping from Twitter by sending requests to its API endpoints. You can retrieve tweets, user profiles, timelines, and other Twitter data programmatically. This can be particularly useful for researchers, data analysts, and developers who want to collect and analyze Twitter data for various purposes, such as sentiment analysis, trend tracking, or social media research. Given that it is legal and allowed to scrape publicly available data from Twitter, I chose to go ahead with my intended data collection. For data scraping, I used a python library called ntscraper (https://github.com/bocchilorenzo/ntscraper) that allows users to search and scrape tweets with a certain term, search and scrape tweets with a certain hashtag, scrape tweets from a user profile, and get profile information of a user. 
+
