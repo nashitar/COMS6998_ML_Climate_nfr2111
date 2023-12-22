@@ -45,7 +45,7 @@ def get_tweets(scraper, terms, since, until) -> None:
     '''
 
     # Get tweets
-    results = scraper.get_tweets(terms, mode='term',
+    results = scraper.get_tweets(terms, number=10000, mode='term',
                                  since=since, until=until,
                                  language='en')
 
