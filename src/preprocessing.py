@@ -28,7 +28,7 @@ def clean_text(text) -> [str]:
     text = [word for word in text.split() if word not in stopwords]
     return text
 
-def preprocessing(prefix) -> pd.DataFrame:
+def preprocessing(prefix=None) -> pd.DataFrame:
 
     '''
     Preprocess CSV data.
@@ -42,7 +42,10 @@ def preprocessing(prefix) -> pd.DataFrame:
     '''
 
     # Find CSV files in the current directory with a specific prefix
-    filenames = [f'./etc/{file}' for file in os.listdir('./etc') if file.startswith(prefix) and file.endswith('.csv')]
+    if prefix is not None:
+        filenames = [f'./etc/{file}' for file in os.listdir('./etc') if file.startswith(prefix) and file.endswith('.csv')]
+    else: 
+        filenames = [f'./etc/{file}' for file in os.listdir('./etc') if file.startswith('2') and file.endswith('.csv')]
     dataframes = []
 
     # Read each CSV file into a DataFrame and append to a list
@@ -56,23 +59,23 @@ def preprocessing(prefix) -> pd.DataFrame:
     # Drop unnecessary columns
     df = df.drop(columns=['link', 'user', 'is-retweet', 'external-link', 'quoted-post', 
                           'stats', 'pictures', 'videos', 'gifs'])
-    
-    # Filter rows containing the text 'climate change' (case-insensitive)
-    # Scraper gets all tweets containing the words 'climate' and 'change' rather than 
-    # the phrase 'climate change'. This is a fix
-    df = df[df['text'].str.contains('climate change', case=False)]
 
     # Drop rows with missing values and duplicates, then reset the index
     df = df.dropna()
     df = df.drop_duplicates()
     df = df.reset_index(drop=True)
 
+    # Filter rows containing the text 'climate change' (case-insensitive)
+    # Scraper gets all tweets containing the words 'climate' and 'change' rather than 
+    # the phrase 'climate change'. This is a fix
+    df = df[df['text'].str.contains('climate change', case=False)]
+
     # Clean the text in the 'text' column
     df['text'] = df['text'].apply(lambda x: clean_text(x))
 
     return df
 
-def create_model(df, prefix) -> None:
+def create_model(df, prefix='all') -> None:
 
     '''
     Create Word2Vec model.
